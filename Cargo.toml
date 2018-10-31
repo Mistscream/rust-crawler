@@ -5,4 +5,4 @@ authors = ["Marc Schmeling <marcsch@posteo.de>"]
 
 [dependencies]
 reqwest = "*"
-linkify = "*"
+select = "*"
