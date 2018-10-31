@@ -1,3 +1,7 @@
+mod lib;
+
+use lib::*;
+
 fn main() {
-    println!("Hello, world!");
+    libtest();
 }
