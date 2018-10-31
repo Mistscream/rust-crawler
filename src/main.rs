@@ -4,6 +4,10 @@ use lib::*;
 
 fn main() {
     let url = "http://www.berlin.de/polizei/polizeimeldungen/archiv/";
-    
-    get_request(&url);
+
+    let response = get_request(&url);
+    match response {
+        Some(r) => print_response(r),
+        None => (),
+    }
 }
