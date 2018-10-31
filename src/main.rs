@@ -3,5 +3,7 @@ mod lib;
 use lib::*;
 
 fn main() {
-    libtest();
+    let url = "http://www.berlin.de/polizei/polizeimeldungen/archiv/";
+    
+    get_request(&url);
 }
