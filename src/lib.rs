@@ -78,11 +78,8 @@ fn complete_links(links: Vec<String>) -> Vec<String> {
 
 /// Removes all links not relevant for use case
 fn filter_relevant_links(links: Vec<String>) -> Vec<String> {
-    links.into_iter()
-    .filter(|s| s.starts_with("https://www.berlin.de/polizei/polizeimeldungen"))
-    .collect()
+    links
+        .into_iter()
+        .filter(|s| s.starts_with("https://www.berlin.de/polizei/polizeimeldungen"))
+        .collect()
 }
-
-// let mut s2 = String::from("def");
-// let s1 = String::from("abc");
-// s2.insert_str(0, s1.as_str());
