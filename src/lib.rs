@@ -3,8 +3,8 @@ extern crate reqwest;
 extern crate select;
 
 use self::chrono::prelude::*;
-// use self::select::document::Document;
-// use self::select::predicate::Name;
+use self::select::document::Document;
+use self::select::predicate::Name;
 
 //pub fn fat_request<'a>(url: &'a str) -> FatResponse<'a>   {
 //    let res = get(url).unwrap();
@@ -52,4 +52,10 @@ pub fn request(url: &str) -> Option<ResponseData> {
         time: Utc::now(),
         body: Document::from(body.as_str()),
     })
+}
+
+pub fn find_links<'a>(body: &'a Document) -> Vec<&'a str> {
+    body.find(Name("a"))
+        .filter_map(|a| a.attr("href"))
+        .collect()
 }
