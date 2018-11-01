@@ -11,21 +11,27 @@ pub fn run(url_queue: &mut Vec<String>, responses: &mut Vec<ResponseData>) {
     loop {
         println!("{} urls in queue: starting requests...", url_queue.len());
         for url in url_queue.iter() {
+            println!("Sending request to {}", url);
             let response = request(url);
             match response {
-                Some(r) => responses.push(r),
-                None => ()
+                Some(r) => {
+                    responses.push(r);
+                    println!("Request successful");
+                }
+                None => println!("Request failed")
             }
         }
 
-        println!("{} responses from requests: starting to find links...", responses.len());
+        println!(
+            "{} responses from requests: starting link search...",
+            responses.len()
+        );
         for response in responses.iter() {
             let links = process_links(&response.body);
             url_queue.extend(links);
             url_queue.sort_unstable();
             url_queue.dedup();
         }
-        // break;
     }
 }
 
