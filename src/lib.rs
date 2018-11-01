@@ -7,7 +7,6 @@ use self::select::document::Document;
 use self::select::predicate::Name;
 
 /// Holds the information of a Response which is important for our crawler
-#[derive(Debug)]
 pub struct ResponseData {
     pub url: String, // make url &str ??
     pub time: DateTime<Utc>,
