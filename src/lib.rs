@@ -6,6 +6,26 @@ use self::chrono::prelude::*;
 use self::select::document::Document;
 use self::select::predicate::Name;
 
+/// Starts the crawling
+pub fn run(url_queue: &mut Vec<String>, responses: &mut Vec<ResponseData>) {
+    loop {
+        for url in url_queue.iter() {
+            let response = request(url);
+            match response {
+                Some(r) => responses.push(r),
+                None => ()
+            }
+        }
+
+        for response in responses.iter() {
+            let links = process_links(&response.body);
+            url_queue.extend(links);
+            url_queue.sort_unstable();
+            url_queue.dedup();
+        }
+    }
+}
+
 /// Holds the information of a Response which is important for our crawler
 pub struct ResponseData {
     pub url: String, // make url &str ??
