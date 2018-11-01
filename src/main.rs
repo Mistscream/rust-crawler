@@ -3,11 +3,13 @@ mod lib;
 use lib::*;
 
 fn main() {
-    let url = "http://www.berlin.de/polizei/polizeimeldungen/archiv/";
+    // let mut url_queue = vec![];
+    // let mut responses = vec![];
 
-    let response = get_request(&url);
-    match response {
-        Some(r) => print_response(r),
-        None => (),
-    }
+    let url = "http://www.berlin.de/polizei/polizeimeldungen/archiv/";
+    // url_queue.push(url);
+
+    let response = request(&url);
+    // responses.push(response);
+    println!("{:?}", response);
 }
