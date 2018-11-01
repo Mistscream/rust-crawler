@@ -7,7 +7,10 @@ use self::select::document::Document;
 use self::select::predicate::Name;
 
 /// Starts the crawling
-pub fn run(url_queue: &mut Vec<String>, responses: &mut Vec<ResponseData>) {
+pub fn run(url: String) {
+    let mut url_queue: Vec<String> = vec![url];
+    let mut responses: Vec<ResponseData> = vec![];
+
     loop {
         println!("{} urls in queue: starting requests...", url_queue.len());
         for url in url_queue.iter() {
@@ -36,20 +39,14 @@ pub fn run(url_queue: &mut Vec<String>, responses: &mut Vec<ResponseData>) {
 }
 
 /// Holds the information of a Response which is important for our crawler
-pub struct ResponseData {
-    pub url: String, // make url &str ??
-    pub time: DateTime<Utc>,
-    pub body: Document,
-}
-
-// Temporare in-memory database until MongoDB is implemented
-struct TempDataBase {
-    responses: Vec<ResponseData>,
-    url_queue: Vec<String>,
+struct ResponseData {
+    url: String, // make url &str ??
+    time: DateTime<Utc>,
+    body: Document,
 }
 
 /// Starts a get request to given url and returns ResponseData
-pub fn request(url: &str) -> Option<ResponseData> {
+fn request(url: &str) -> Option<ResponseData> {
     let response = reqwest::get(url);
     if response.is_err() {
         return None;
@@ -74,7 +71,7 @@ pub fn request(url: &str) -> Option<ResponseData> {
     })
 }
 
-pub fn process_links(body: &Document) -> Vec<String> {
+fn process_links(body: &Document) -> Vec<String> {
     let links = find_links(body);
     let links = complete_links(links);
     let links = filter_relevant_links(links);
