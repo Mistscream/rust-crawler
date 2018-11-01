@@ -11,5 +11,13 @@ fn main() {
 
     let response = request(&url);
     // responses.push(response);
-    println!("{:?}", response);
+    match response {
+        Some(r) => {
+            let links = find_links(&r.body);
+            for link in links.into_iter() {
+                println!("{}", link);
+            }
+        }
+        None => ()
+    }
 }
