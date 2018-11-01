@@ -6,7 +6,6 @@ use self::chrono::prelude::*;
 use self::select::document::Document;
 use self::select::predicate::Name;
 
-
 /// Holds the information of a Response which is important for our crawler
 #[derive(Debug)]
 pub struct ResponseData {
@@ -41,10 +40,50 @@ pub fn request(url: &str) -> Option<ResponseData> {
     })
 }
 
+pub fn process_links(body: &Document) -> Vec<String> {
+    let links = find_links(body);
+    let links = complete_links(links);
+    let links = filter_relevant_links(links);
+
+    links
+}
+
 /// Finds all links within a Document
-pub fn find_links<'a>(body: &'a Document) -> Vec<String> {
-    body.find(Name("a"))
+fn find_links(body: &Document) -> Vec<String> {
+    let vec: Vec<String> = body
+        .find(Name("a"))
         .filter_map(|a| a.attr("href"))
         .map(|s| String::from(s))
-        .collect()
+        .collect();
+
+    vec
 }
+
+/// Completes all links, e.g. "/polizei/" -> "https://www.berlin.de/polizei/"
+fn complete_links(links: Vec<String>) -> Vec<String> {
+    let base_url = "https://www.berlin.de";
+    let mut completed_links: Vec<String> = vec![];
+
+    for link in links.iter() {
+        if link.starts_with("/") {
+            let mut url = String::from(base_url);
+            url.push_str(&link[..]);
+            completed_links.push(url);
+        } else {
+            completed_links.push(String::from(link.to_string()));
+        }
+    }
+
+    completed_links
+}
+
+/// Removes all links not relevant for use case
+fn filter_relevant_links(links: Vec<String>) -> Vec<String> {
+    links.into_iter()
+    .filter(|s| s.starts_with("https://www.berlin.de/polizei/polizeimeldungen"))
+    .collect()
+}
+
+// let mut s2 = String::from("def");
+// let s1 = String::from("abc");
+// s2.insert_str(0, s1.as_str());
