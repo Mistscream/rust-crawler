@@ -42,8 +42,9 @@ pub fn request(url: &str) -> Option<ResponseData> {
 }
 
 /// Finds all links within a Document
-pub fn find_links<'a>(body: &'a Document) -> Vec<&'a str> {
+pub fn find_links<'a>(body: &'a Document) -> Vec<String> {
     body.find(Name("a"))
         .filter_map(|a| a.attr("href"))
+        .map(|s| String::from(s))
         .collect()
 }
