@@ -44,7 +44,7 @@ pub struct ResponseData {
 
 // Temporare in-memory database until MongoDB is implemented
 struct TempDataBase {
-    responses: Vec<reqwest::Response>,
+    responses: Vec<ResponseData>,
     url_queue: Vec<String>,
 }
 
