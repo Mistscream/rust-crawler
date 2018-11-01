@@ -1,6 +1,6 @@
 mod lib;
 
-use lib::*;
+use lib::{run, ResponseData};
 
 fn main() {
     let start_url = String::from("http://www.berlin.de/polizei/polizeimeldungen/archiv");
