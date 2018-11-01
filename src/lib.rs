@@ -66,7 +66,7 @@ fn complete_links(links: Vec<String>) -> Vec<String> {
     for link in links.iter() {
         if link.starts_with("/") {
             let mut url = String::from(base_url);
-            url.push_str(&link[..]);
+            url.push_str(&link);
             completed_links.push(url);
         } else {
             completed_links.push(String::from(link.to_string()));
