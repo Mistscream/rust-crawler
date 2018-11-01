@@ -50,6 +50,6 @@ pub fn request(url: &str) -> Option<ResponseData> {
     Some(ResponseData {
         url: String::from(url),
         time: Utc::now(),
-        body: String::from(body),
+        body: Document::from(body.as_str()),
     })
 }
