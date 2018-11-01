@@ -9,6 +9,7 @@ use self::select::predicate::Name;
 /// Starts the crawling
 pub fn run(url_queue: &mut Vec<String>, responses: &mut Vec<ResponseData>) {
     loop {
+        println!("{} urls in queue: starting requests...", url_queue.len());
         for url in url_queue.iter() {
             let response = request(url);
             match response {
@@ -17,12 +18,14 @@ pub fn run(url_queue: &mut Vec<String>, responses: &mut Vec<ResponseData>) {
             }
         }
 
+        println!("{} responses from requests: starting to find links...", responses.len());
         for response in responses.iter() {
             let links = process_links(&response.body);
             url_queue.extend(links);
             url_queue.sort_unstable();
             url_queue.dedup();
         }
+        // break;
     }
 }
 
