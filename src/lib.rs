@@ -21,9 +21,9 @@ use self::chrono::prelude::*;
 
 #[derive(Debug)]
 pub struct ResponseData {
-    url: String,
+    url: String,    // make url &str ??
     time: DateTime<Utc>,
-    body: String,
+    body: Document,
 }
 
 pub fn request(url: &str) -> Option<ResponseData> {
