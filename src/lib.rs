@@ -42,6 +42,12 @@ pub struct ResponseData {
     pub body: Document,
 }
 
+// Temporare in-memory database until MongoDB is implemented
+struct TempDataBase {
+    responses: Vec<reqwest::Response>,
+    url_queue: Vec<String>,
+}
+
 /// Starts a get request to given url and returns ResponseData
 pub fn request(url: &str) -> Option<ResponseData> {
     let response = reqwest::get(url);
