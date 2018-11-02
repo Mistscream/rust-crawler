@@ -14,6 +14,14 @@ impl UrlQueue {
         }
     }
 
+    pub fn get(&self) -> &Vec<String> {
+        &self.links
+    }
+
+    pub fn len(&self) -> usize {
+        self.links.len()
+    }
+
     pub fn add(&mut self, new_links: Vec<String>) {
         for link in new_links.iter() {
             if self.links.contains(link) {
