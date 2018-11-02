@@ -3,6 +3,22 @@ extern crate select;
 use self::select::document::Document;
 use self::select::predicate::Name;
 
+pub struct UrlQueue {
+    links: Vec<String>,
+}
+
+impl UrlQueue {
+    pub fn add(&mut self, new_links: Vec<String>) {
+        for link in new_links.iter() {
+            if self.links.contains(link) {
+                println!("link already in url queue: {}", link);
+            } else {
+                self.links.push(link.to_string());
+            }
+        }
+    }
+}
+
 pub fn process(body: &Document) -> Vec<String> {
     let links = find(body);
     let links = complete(links);
