@@ -4,13 +4,15 @@ mod report;
 
 
 /// Starts the crawling
-pub fn run(url: String) {
-    let mut url_queue: Vec<String> = vec![url];
+pub fn run(start_urls: Vec<String>) {
+    let mut url_queue = link::UrlQueue::new();
     let mut responses: Vec<request::ResponseData> = vec![];
+
+    url_queue.add(start_urls);
 
     loop {
         println!("{} urls in queue: starting requests...", url_queue.len());
-        for url in url_queue.iter() {
+        for url in url_queue.get().iter() {
             println!("Sending request to {}", url);
             let response = request::get(url);
             match response {
@@ -28,9 +30,7 @@ pub fn run(url: String) {
         );
         for response in responses.iter() {
             let links = link::process(response.get_body());
-            url_queue.extend(links);
-            url_queue.sort_unstable();
-            url_queue.dedup();
+            url_queue.add(links);
         }
     }
 }
