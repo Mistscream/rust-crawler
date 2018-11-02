@@ -8,6 +8,12 @@ pub struct UrlQueue {
 }
 
 impl UrlQueue {
+    pub fn new() -> UrlQueue {
+        UrlQueue {
+            links: vec![],
+        }
+    }
+
     pub fn add(&mut self, new_links: Vec<String>) {
         for link in new_links.iter() {
             if self.links.contains(link) {
