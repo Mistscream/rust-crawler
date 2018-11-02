@@ -3,15 +3,15 @@ extern crate select;
 use self::select::document::Document;
 use self::select::predicate::Name;
 
-pub fn process_links(body: &Document) -> Vec<String> {
-    let links = find_links(body);
-    let links = complete_links(links);
-    let links = filter_relevant_links(links);
+pub fn process(body: &Document) -> Vec<String> {
+    let links = find(body);
+    let links = complete(links);
+    let links = filter_relevant(links);
 
     links
 }
 
-fn find_links(body: &Document) -> Vec<String> {
+fn find(body: &Document) -> Vec<String> {
     let vec: Vec<String> = body
         .find(Name("a"))
         .filter_map(|a| a.attr("href"))
@@ -21,7 +21,7 @@ fn find_links(body: &Document) -> Vec<String> {
     vec
 }
 
-fn complete_links(links: Vec<String>) -> Vec<String> {
+fn complete(links: Vec<String>) -> Vec<String> {
     let base_url = "https://www.berlin.de";
     let mut completed_links: Vec<String> = vec![];
 
@@ -38,7 +38,7 @@ fn complete_links(links: Vec<String>) -> Vec<String> {
     completed_links
 }
 
-fn filter_relevant_links(links: Vec<String>) -> Vec<String> {
+fn filter_relevant(links: Vec<String>) -> Vec<String> {
     links
         .into_iter()
         .filter(|s| s.starts_with("https://www.berlin.de/polizei/polizeimeldungen"))

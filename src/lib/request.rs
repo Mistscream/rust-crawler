@@ -25,7 +25,7 @@ impl ResponseData {
     }
 }
 
-pub fn request(url: &str) -> Option<ResponseData> {
+pub fn get(url: &str) -> Option<ResponseData> {
     let response = reqwest::get(url);
     if response.is_err() {
         return None;
