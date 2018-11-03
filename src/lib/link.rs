@@ -4,32 +4,47 @@ use self::select::document::Document;
 use self::select::predicate::Name;
 
 pub struct UrlQueue {
-    links: Vec<String>,
+    urls: Vec<String>,
 }
 
 impl UrlQueue {
     pub fn new() -> UrlQueue {
-        UrlQueue {
-            links: vec![],
-        }
+        UrlQueue { urls: vec![] }
     }
 
-    pub fn get(&self) -> &Vec<String> {
-        &self.links
+    pub fn get_urls(&self) -> &Vec<String> {
+        &self.urls
+    }
+
+    fn set_urls(&mut self, urls: Vec<String>) {
+        self.urls = urls;
     }
 
     pub fn len(&self) -> usize {
-        self.links.len()
+        self.urls.len()
     }
 
-    pub fn add(&mut self, new_links: Vec<String>) {
-        for link in new_links.iter() {
-            if self.links.contains(link) {
-                println!("link already in url queue: {}", link);
-            } else {
-                self.links.push(link.to_string());
-            }
-        }
+    pub fn add_vec(&mut self, new_links: &mut Vec<String>) {
+        self.urls.append(new_links);
+        self.urls.sort_unstable();
+        self.urls.dedup();
+    }
+
+    pub fn add(&mut self, url: String) {
+        self.urls.push(url);
+        self.urls.sort_unstable();
+        self.urls.dedup();
+    }
+
+    pub fn remove_from(&mut self, other: &Self) {
+        let urls: Vec<String> = self
+            .get_urls()
+            .into_iter()
+            .filter(|u| !other.get_urls().contains(u))
+            .map(|s| s.to_string())
+            .collect();
+        
+        self.set_urls(urls);
     }
 }
 
@@ -53,19 +68,16 @@ fn find(body: &Document) -> Vec<String> {
 
 fn complete(links: Vec<String>) -> Vec<String> {
     let base_url = "https://www.berlin.de";
-    let mut completed_links: Vec<String> = vec![];
 
-    for link in links.iter() {
-        if link.starts_with("/") {
-            let mut url = String::from(base_url);
-            url.push_str(link);
-            completed_links.push(url);
-        } else {
-            completed_links.push(String::from(link.to_string()));
-        }
-    }
-
-    completed_links
+    links
+        .into_iter()
+        .map(|s| {
+            if s.starts_with("/") {
+                format!("{}{}", base_url, s)
+            } else {
+                s
+            }
+        }).collect()
 }
 
 fn filter_relevant(links: Vec<String>) -> Vec<String> {
