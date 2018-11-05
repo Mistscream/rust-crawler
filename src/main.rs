@@ -1,3 +1,7 @@
+extern crate select;
+extern crate chrono;
+extern crate reqwest;
+
 mod lib;
 
 use lib::run;

@@ -1,5 +1,3 @@
-extern crate select;
-
 pub struct UrlList {
     urls: Vec<String>,
 }

@@ -1,7 +1,4 @@
-extern crate chrono;
-extern crate reqwest;
-
-use self::chrono::{DateTime, Utc};
+use chrono::{DateTime, Utc};
 
 pub fn get(url: &str) -> Option<Response> {
     let response = reqwest::get(url);
