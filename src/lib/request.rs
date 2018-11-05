@@ -1,29 +1,9 @@
-extern crate chrono;
-extern crate reqwest;
-extern crate select;
+extern crate chrono;  // for managing times
+extern crate reqwest; // for http requests
+extern crate select; // for parsing html documents
 
 use self::chrono::prelude::*;
 use self::select::document::Document;
-
-pub struct ResponseData {
-    url: String,
-    time: DateTime<Utc>,
-    body: Document,
-}
-
-impl ResponseData {
-    pub fn get_url(&self) -> &str {
-        &self.url
-    }
-
-    pub fn get_time(&self) -> &DateTime<Utc> {
-        &self.time
-    }
-
-    pub fn get_body(&self) -> &Document {
-        &self.body
-    }
-}
 
 pub fn get(url: &str) -> Option<ResponseData> {
     let response = reqwest::get(url);
@@ -41,11 +21,55 @@ pub fn get(url: &str) -> Option<ResponseData> {
         return None;
     }
 
-    let body = body.unwrap();
+    Some(ResponseData::new(String::from(url), body.unwrap()))
+}
 
-    Some(ResponseData {
-        url: String::from(url),
-        time: Utc::now(),
-        body: Document::from(body.as_str()),
-    })
+pub struct ResponseData {
+    url: String,
+    time: DateTime<Utc>,
+    body: Document,
+}
+
+impl ResponseData {
+    pub fn new(url: String, body: String) -> ResponseData {
+        ResponseData {
+            url: String::from(url),
+            time: Utc::now(),
+            body: Document::from(body.as_str()),
+        }
+    }
+
+    pub fn get_url(&self) -> &str {
+        &self.url
+    }
+
+    pub fn get_time(&self) -> &DateTime<Utc> {
+        &self.time
+    }
+
+    pub fn get_body(&self) -> &Document {
+        &self.body
+    }
+}
+
+pub struct ResponseList {
+    responses: Vec<ResponseData>,
+}
+
+impl ResponseList {
+    pub fn new() -> ResponseList {
+        ResponseList { responses: vec![] }
+    }
+
+    pub fn get_responses(&mut self) -> &mut Vec<ResponseData> {
+        &mut self.responses
+    }
+
+    pub fn add_response(&mut self, data: ResponseData) {
+        self.responses.push(data);
+    }
+
+    pub fn len(&self) -> usize {
+        self.responses.len()
+    }
 }
