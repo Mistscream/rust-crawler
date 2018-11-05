@@ -49,6 +49,6 @@ fn extract_links(url_q: &mut url::UrlList, responses: &mut Vec<http::Response>) 
     for response in responses.iter() {
         let mut urls = url::UrlList::from_html(response.get_body());
         println!("Found {} links: adding new ones to queue", urls.len());
-        url_q.add_UrlList(&mut urls);
+        url_q.add_url_list(&mut urls);
     }
 }
