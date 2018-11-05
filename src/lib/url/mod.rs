@@ -35,18 +35,22 @@ impl UrlList {
 
     pub fn set_urls(&mut self, urls: Vec<String>) {
         self.urls = urls;
+        self.remove_dups();
     }
 
     pub fn add_urls(&mut self, urls: &mut Vec<String>) {
         self.urls.append(urls);
+        self.remove_dups();
     }
 
     pub fn add_url(&mut self, url: String) {
         self.urls.push(url);
+        self.remove_dups();
     }
 
-    pub fn add_UrlList(&mut self, list: &mut UrlList) {
+    pub fn add_url_list(&mut self, list: &mut UrlList) {
         self.urls.append(&mut list.urls);
+        self.remove_dups();
     }
 
     pub fn remove_urls(&mut self, urls: &UrlList) {
@@ -56,6 +60,11 @@ impl UrlList {
             .filter(|u| !urls.get_urls().contains(u))
             .map(|s| s.to_string())
             .collect();
+    }
+
+    fn remove_dups(&mut self) {
+        self.urls.sort_unstable();
+        self.urls.dedup();
     }
 
     pub fn len(&self) -> usize {
