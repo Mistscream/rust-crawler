@@ -1,49 +1,49 @@
-mod link;
+mod http;
 mod report;
-mod request;
+mod url;
 
-pub fn run(start_urls: &mut Vec<String>) {
-    let mut url_q = link::UrlQueue::new();
-    let mut visited_q = link::UrlQueue::new();
-    let mut respones_list = request::ResponseList::new();
+pub fn run(start_url: &str) {
+    let mut url_queue = url::UrlList::new();
+    let mut visited_urls = url::UrlList::new();
+    let mut responses: Vec<http::Response> = vec![];
 
-    url_q.add_vec(start_urls);
+    url_queue.add_url(start_url.to_string());
 
     loop {
         // make requests to all urls in queue
-        println!("{} urls in queue: starting requests...", url_q.len());
-        make_requests(&mut url_q, &mut visited_q, &mut respones_list);
+        println!("{} urls in queue: starting requests", url_queue.len());
+        make_requests(&mut url_queue, &mut visited_urls, &mut responses);
 
         // extracting links from response data
-        println!("Got {} responses: starting link search...", respones_list.len());
-        extract_links(&mut url_q, &mut respones_list);
+        println!("Got {} responses: starting link search", responses.len());
+        extract_links(&mut url_queue, &mut responses);
 
         // removing urls from queue which have recently been requested
-        println!("{} urls in queue: removing recently used...", url_q.len());
-        url_q.remove_from(&visited_q);
+        println!("{} urls in queue: removing recently used", url_queue.len());
+        url_queue.remove_urls(&visited_urls);
     }
 }
 
 fn make_requests(
-    url_q: &mut link::UrlQueue,
-    visited_q: &mut link::UrlQueue,
-    responses: &mut request::ResponseList,
+    url_q: &mut url::UrlList,
+    visited_q: &mut url::UrlList,
+    responses: &mut Vec<http::Response>,
 ) {
     for url in url_q.get_urls().iter() {
         println!("Sending request to {}", url);
-        let response = request::get(url);
+        let response = http::get(url);
         if response.is_some() {
-            responses.add_response(response.unwrap());
+            responses.push(response.unwrap());
             println!("Request successful");
         }
-        visited_q.add(url.to_string());
+        visited_q.add_url(url.to_string());
     }
 }
 
-fn extract_links(url_q: &mut link::UrlQueue, responses: &mut request::ResponseList) {
-    for response in responses.get_responses().iter() {
-        let mut links = link::process(&response.get_body());
-        println!("Found {} links: adding new ones to queue...", links.len());
-        url_q.add_vec(&mut links);
+fn extract_links(url_q: &mut url::UrlList, responses: &mut Vec<http::Response>) {
+    for response in responses.iter() {
+        let mut urls = url::UrlList::from_html(response.get_body());
+        println!("Found {} links: adding new ones to queue", urls.len());
+        url_q.add_UrlList(&mut urls);
     }
 }
