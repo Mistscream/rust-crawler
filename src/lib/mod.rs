@@ -21,6 +21,11 @@ pub fn run(start_url: &str) {
         // removing urls from queue which have recently been requested
         println!("{} urls in queue: removing recently used", url_queue.len());
         url_queue.remove_urls(&visited_urls);
+
+        // stop crawling when there are no new unvisited urls
+        if url_queue.len() == 0 {
+            std::process::exit(0);
+        }
     }
 }
 
