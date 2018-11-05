@@ -11,7 +11,7 @@ impl UrlList {
         let base_url = "https://www.berlin.de";
         let body = select::document::Document::from(body);
 
-        let mut urls: Vec<String> = body
+        let  urls: Vec<String> = body
             .find(select::predicate::Name("a"))
             .filter_map(|a| a.attr("href"))
             .map(|s| String::from(s))
