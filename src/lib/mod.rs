@@ -24,6 +24,7 @@ pub fn run(start_url: &str) {
 
         // stop crawling when there are no new unvisited urls
         if url_queue.len() == 0 {
+            println!("Responses: {}", responses.len());
             std::process::exit(0);
         }
     }
