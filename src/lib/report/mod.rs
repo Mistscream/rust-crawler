@@ -1,9 +1,6 @@
-use lib::http::Response;
 use chrono::{Date, DateTime, Utc};
+use lib::http::Response;
 
-
-// pub fn extract(body: &str) -> Option<Report> {
-// }
 
 pub struct Report {
     url: String,
@@ -13,4 +10,10 @@ pub struct Report {
     title: String,
     location: String,
     text: String,
+}
+
+impl Report {
+    pub fn new(response: &Response) {
+
+    }
 }

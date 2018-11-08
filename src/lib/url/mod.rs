@@ -1,5 +1,75 @@
+pub struct Url {
+    url: String,
+    visited: bool,
+}
+
+impl Url {
+    pub fn new(url: &str) -> Url {
+        Url {
+            url: String::from(url),
+            visited: false,
+        }
+    }
+
+    pub fn is_visited(&self) -> bool {
+        self.visited
+    }
+
+    pub fn set_visited(&mut self, status: bool) {
+        self.visited = status;
+    }
+
+    pub fn get_string(&self) -> &str {
+        &self.url
+    }
+}
+
+impl Ord for Url {
+    fn cmp(&self, other: &Url) -> std::cmp::Ordering {
+        self.url.cmp(&other.url)
+    }
+}
+
+impl PartialEq for Url {
+    fn eq(&self, other: &Url) -> bool {
+        self.url == other.url
+    }
+}
+
+impl PartialOrd for Url {
+    fn partial_cmp(&self, other: &Url) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Eq for Url {}
+
 pub struct UrlList {
-    urls: Vec<String>,
+    urls: Vec<Url>,
+}
+
+impl<'a> std::iter::FromIterator<&'a Url> for UrlList {
+    fn from_iter<I: IntoIterator<Item = &'a Url>>(iter: I) -> Self {
+        let mut urls = UrlList::new();
+
+        for i in iter {
+            urls.add_url(Url::new(&i.get_string()));
+        }
+
+        urls
+    }
+}
+
+impl<'a> std::iter::FromIterator<&'a Url> for std::vec::Vec<Url> {
+    fn from_iter<I: IntoIterator<Item = &'a Url>>(iter: I) -> Self {
+        let mut urls: Vec<Url> = vec![];
+
+        for i in iter {
+            urls.push(Url::new(&i.get_string()));
+        }
+
+        urls
+    }
 }
 
 impl UrlList {
@@ -11,7 +81,7 @@ impl UrlList {
         let base_url = "https://www.berlin.de";
         let body = select::document::Document::from(body);
 
-        let  urls: Vec<String> = body
+        let urls: Vec<Url> = body
             .find(select::predicate::Name("a"))
             .filter_map(|a| a.attr("href"))
             .map(|s| String::from(s))
@@ -22,26 +92,31 @@ impl UrlList {
                     s
                 }
             }).filter(|s| s.starts_with("https://www.berlin.de/polizei/polizeimeldungen"))
+            .map(|s| Url::new(&s))
             .collect();
 
         UrlList { urls: urls }
     }
 
-    pub fn get_urls(&self) -> &Vec<String> {
+    pub fn get_urls(&self) -> &Vec<Url> {
         &self.urls
     }
 
-    pub fn set_urls(&mut self, urls: Vec<String>) {
+    pub fn get_urls_mut(&mut self) -> &mut Vec<Url> {
+        &mut self.urls
+    }
+
+    pub fn set_urls(&mut self, urls: Vec<Url>) {
         self.urls = urls;
         self.remove_dups();
     }
 
-    pub fn add_urls(&mut self, urls: &mut Vec<String>) {
+    pub fn add_urls(&mut self, urls: &mut Vec<Url>) {
         self.urls.append(urls);
         self.remove_dups();
     }
 
-    pub fn add_url(&mut self, url: String) {
+    pub fn add_url(&mut self, url: Url) {
         self.urls.push(url);
         self.remove_dups();
     }
@@ -56,7 +131,7 @@ impl UrlList {
             .get_urls()
             .into_iter()
             .filter(|u| !urls.get_urls().contains(u))
-            .map(|s| s.to_string())
+            // .map(|s| s.to_string())
             .collect();
     }
 

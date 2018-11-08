@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use regex::Regex;
 
 pub fn get(url: &str) -> Option<Response> {
     let response = reqwest::get(url);
@@ -23,6 +24,7 @@ pub struct Response {
     url: String,
     time: DateTime<Utc>,
     body: String,
+    report: bool,
 }
 
 impl Response {
@@ -31,6 +33,7 @@ impl Response {
             url: String::from(url),
             time: Utc::now(),
             body: String::from(body),
+            report: Response::check_for_report(&url),
         }
     }
 
@@ -44,5 +47,19 @@ impl Response {
 
     pub fn get_body(&self) -> &str {
         &self.body
+    }
+
+    pub fn is_report(&self) -> bool {
+        self.report
+    }
+
+    fn check_for_report(url: &str) -> bool {
+        let ex = Regex::new(r"^(https?://www.berlin.de/polizei).*(pressemitteilung.[0-9]*.php)$")
+            .unwrap();
+        if ex.is_match(&url) {
+            true
+        } else {
+            false
+        }
     }
 }

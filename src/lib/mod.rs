@@ -2,25 +2,32 @@ mod http;
 mod report;
 mod url;
 
-pub fn run(start_url: &str) {
-    let mut url_queue = url::UrlList::new();
-    let mut visited_urls = url::UrlList::new();
-    let mut responses: Vec<http::Response> = vec![];
+use self::http::Response;
+use self::report::Report;
+use self::url::{Url, UrlList};
 
-    url_queue.add_url(start_url.to_string());
+pub fn run(start_url: &str) {
+    let mut url_queue = UrlList::new();
+    let mut responses: Vec<Response> = vec![];
+    let mut reports: Vec<Report> = vec![];
+
+    url_queue.add_url(Url::new(start_url));
 
     loop {
-        // make requests to all urls in queue
-        println!("{} urls in queue: starting requests", url_queue.len());
-        make_requests(&mut url_queue, &mut visited_urls, &mut responses);
+        // make requests to all urls in queue and store responses
+        println!("{} urls in queue, sending requests", url_queue.len());
+        let mut new_responses = send_request(&mut url_queue);
+        println!("{} new responses", new_responses.len());
+        responses.append(&mut new_responses);
+        println!("{} responses all together", responses.len());
 
-        // extracting links from response data
-        println!("Got {} responses: starting link search", responses.len());
-        extract_links(&mut url_queue, &mut responses);
+        // find urls from responses and append to url queue
+        let mut new_urls = find_urls(&mut responses);
+        println!("{} urls found", new_urls.len());
+        url_queue.add_url_list(&mut new_urls);
 
-        // removing urls from queue which have recently been requested
-        println!("{} urls in queue: removing recently used", url_queue.len());
-        url_queue.remove_urls(&visited_urls);
+        // parse relevant data from reports
+        reports.append(&mut create_reports(&responses));
 
         // stop crawling when there are no new unvisited urls
         if url_queue.len() == 0 {
@@ -30,26 +37,36 @@ pub fn run(start_url: &str) {
     }
 }
 
-fn make_requests(
-    url_q: &mut url::UrlList,
-    visited_q: &mut url::UrlList,
-    responses: &mut Vec<http::Response>,
-) {
-    for url in url_q.get_urls().iter() {
-        println!("Sending request to {}", url);
-        let response = http::get(url);
-        if response.is_some() {
-            responses.push(response.unwrap());
-            println!("Request successful");
+fn send_request(url_q: &mut UrlList) -> Vec<Response> {
+    let mut responses: Vec<Response> = vec![];
+    for url in url_q.get_urls_mut().iter_mut() {
+        if !url.is_visited() {
+            let response = http::get(url.get_string());
+            if response.is_some() {
+                responses.push(response.unwrap());
+                url.set_visited(true);
+            }
         }
-        visited_q.add_url(url.to_string());
     }
+
+    responses
 }
 
-fn extract_links(url_q: &mut url::UrlList, responses: &mut Vec<http::Response>) {
+fn find_urls(responses: &mut Vec<Response>) -> UrlList {
+    let mut urls = UrlList::new();
     for response in responses.iter() {
-        let mut urls = url::UrlList::from_html(response.get_body());
-        println!("Found {} links: adding new ones to queue", urls.len());
-        url_q.add_url_list(&mut urls);
+        let mut new_urls = UrlList::from_html(response.get_body());
+        urls.add_url_list(&mut new_urls);
     }
+
+    urls
+}
+
+fn create_reports(responses: &Vec<Response>) -> Vec<Report> {
+    let reports: Vec<Report> = vec![];
+    for response in responses {
+        Report::new(response);
+    }
+
+    reports
 }
