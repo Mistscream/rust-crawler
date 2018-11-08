@@ -4,27 +4,25 @@ mod url;
 
 use self::http::Response;
 use self::report::Report;
-use self::url::{Url, UrlList};
+use self::url::Url;
 
 pub fn run(start_url: &str) {
-    let mut url_queue = UrlList::new();
+    let mut url_queue: Vec<Url> = vec![];
     let mut responses: Vec<Response> = vec![];
     let mut reports: Vec<Report> = vec![];
 
-    url_queue.add_url(Url::new(start_url));
+    url_queue.push(Url::new(start_url));
 
     loop {
         // make requests to all urls in queue and store responses
-        println!("{} urls in queue, sending requests", url_queue.len());
         let mut new_responses = send_request(&mut url_queue);
-        println!("{} new responses", new_responses.len());
         responses.append(&mut new_responses);
-        println!("{} responses all together", responses.len());
 
-        // find urls from responses and append to url queue
+        // find urls from responses and append to url queue, remove dups
         let mut new_urls = find_urls(&mut responses);
-        println!("{} urls found", new_urls.len());
-        url_queue.add_url_list(&mut new_urls);
+        url_queue.append(&mut new_urls);
+        url_queue.sort_unstable();
+        url_queue.dedup();
 
         // parse relevant data from reports
         reports.append(&mut create_reports(&responses));
@@ -37,9 +35,11 @@ pub fn run(start_url: &str) {
     }
 }
 
-fn send_request(url_q: &mut UrlList) -> Vec<Response> {
+fn send_request(url_q: &mut Vec<Url>) -> Vec<Response> {
+    println!("{} urls in queue, sending requests", url_q.len());
+
     let mut responses: Vec<Response> = vec![];
-    for url in url_q.get_urls_mut().iter_mut() {
+    for url in url_q.iter_mut() {
         if !url.is_visited() {
             let response = http::get(url.get_string());
             if response.is_some() {
@@ -49,16 +49,18 @@ fn send_request(url_q: &mut UrlList) -> Vec<Response> {
         }
     }
 
+    println!("{} new responses", responses.len());
     responses
 }
 
-fn find_urls(responses: &mut Vec<Response>) -> UrlList {
-    let mut urls = UrlList::new();
+fn find_urls(responses: &mut Vec<Response>) -> Vec<Url> {
+    let mut urls: Vec<Url> = vec![];
     for response in responses.iter() {
-        let mut new_urls = UrlList::from_html(response.get_body());
-        urls.add_url_list(&mut new_urls);
+        let mut new_urls = url::from_html(response.get_body());
+        urls.append(&mut new_urls);
     }
 
+    println!("{} urls found", urls.len());
     urls
 }
 
