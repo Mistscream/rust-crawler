@@ -5,6 +5,7 @@ mod url;
 use self::http::Response;
 use self::report::Report;
 use self::url::Url;
+use chrono::prelude::*;
 use rayon::prelude::*;
 
 pub fn run(start_url: &str) {
@@ -13,6 +14,7 @@ pub fn run(start_url: &str) {
     let mut reports: Vec<Report> = vec![];
 
     url_queue.push(Url::new(start_url));
+    let start_time = chrono::Utc::now();
 
     loop {
         // make requests to all urls in queue and store responses
@@ -30,7 +32,11 @@ pub fn run(start_url: &str) {
 
         // stop crawling when there are no new unvisited urls
         if url_queue.len() == 0 {
+            let end_time = chrono::Utc::now();
+            let duration = start_time.signed_duration_since(end_time);
+
             println!("Responses: {}", responses.len());
+            println!("Time: {}min", duration.num_minutes());
             std::process::exit(0);
         }
     }
