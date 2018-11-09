@@ -2,6 +2,8 @@ use chrono::{DateTime, Utc};
 use regex::Regex;
 
 pub fn get(url: &str) -> Option<Response> {
+    println!("Sending get request to {}", &url);
+
     let response = reqwest::get(url);
     if response.is_err() {
         return None;
@@ -17,6 +19,7 @@ pub fn get(url: &str) -> Option<Response> {
         return None;
     }
 
+    println!("Getting response from {}", &url);
     Some(Response::new(url, body.unwrap().as_str()))
 }
 
