@@ -53,9 +53,7 @@ fn send_request(url_q: &mut Vec<Url>) -> Vec<Response> {
         .map(|r| r.unwrap())
         .collect();
 
-    for url in url_q.iter_mut() {
-        url.set_visited(true);
-    }
+    url_q.par_iter().for_each(|u| u.set_visited(true));
 
     println!("{} new responses", responses.len());
     responses
