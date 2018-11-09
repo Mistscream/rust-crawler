@@ -59,7 +59,7 @@ fn find_urls(responses: &mut Vec<Response>) -> Vec<Url> {
     println!("{} responses in list, searching urls", responses.len());
 
     let urls: Vec<Url> = responses
-        .iter()
+        .par_iter()
         .flat_map(|u| url::from_html(u.get_body()))
         .collect();
 
