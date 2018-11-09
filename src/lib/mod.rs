@@ -28,7 +28,7 @@ pub fn run(start_url: &str) {
         url_queue.dedup();
 
         // parse relevant data from reports
-        reports.append(&mut create_reports(&responses));
+        reports.append(&mut create_reports(&mut responses));
 
         // stop crawling when there are no new unvisited urls
         if url_queue.len() == 0 {
@@ -53,7 +53,7 @@ fn send_request(url_q: &mut Vec<Url>) -> Vec<Response> {
         .map(|r| r.unwrap())
         .collect();
 
-    url_q.par_iter().for_each(|u| u.set_visited(true));
+    url_q.iter_mut().for_each(|u| u.set_visited(true));
 
     println!("{} new responses", responses.len());
     responses
@@ -71,11 +71,8 @@ fn find_urls(responses: &mut Vec<Response>) -> Vec<Url> {
     urls
 }
 
-fn create_reports(responses: &Vec<Response>) -> Vec<Report> {
-    let reports: Vec<Report> = vec![];
-    for response in responses {
-        Report::new(response);
-    }
+fn create_reports(responses: &mut Vec<Response>) -> Vec<Report> {
+    let reports: Vec<Report> = responses.par_iter().map(|r| Report::new(&r)).collect();
 
     reports
 }
