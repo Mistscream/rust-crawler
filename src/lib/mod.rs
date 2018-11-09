@@ -5,6 +5,7 @@ mod url;
 use self::http::Response;
 use self::report::Report;
 use self::url::Url;
+use rayon::prelude::*;
 
 pub fn run(start_url: &str) {
     let mut url_queue: Vec<Url> = vec![];
@@ -40,7 +41,7 @@ fn send_request(url_q: &mut Vec<Url>) -> Vec<Response> {
     println!("{} urls in queue, sending requests", url_q.len());
 
     let responses: Vec<Response> = url_q
-        .iter()
+        .par_iter()
         .filter(|u| !u.is_visited())
         .map(|u| http::get(u.get_string()))
         .filter(|r| r.is_some())
@@ -56,11 +57,12 @@ fn send_request(url_q: &mut Vec<Url>) -> Vec<Response> {
 }
 
 fn find_urls(responses: &mut Vec<Response>) -> Vec<Url> {
-    let mut urls: Vec<Url> = vec![];
-    for response in responses.iter() {
-        let mut new_urls = url::from_html(response.get_body());
-        urls.append(&mut new_urls);
-    }
+    println!("{} responses in list, searching urls", responses.len());
+
+    let urls: Vec<Url> = responses
+        .iter()
+        .flat_map(|u| url::from_html(u.get_body()))
+        .collect();
 
     println!("{} urls found", urls.len());
     urls

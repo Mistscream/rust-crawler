@@ -2,6 +2,7 @@ extern crate chrono;
 extern crate regex;
 extern crate reqwest;
 extern crate select;
+extern crate rayon;
 
 mod lib;
 
