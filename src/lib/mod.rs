@@ -16,7 +16,6 @@ pub fn run(start_url: &str) {
 
     loop {
         // make requests to all urls in queue and store responses
-        // let mut new_responses = send_request_conc(&mut url_queue);
         let mut new_responses = send_request(&mut url_queue);
         responses.append(&mut new_responses);
 
