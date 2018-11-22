@@ -19,7 +19,7 @@ impl Report {
             date: *response.get_time(),
             id: 0,
             title: get_title(response.get_body()),
-            location: String::from("location"),
+            location: get_location(response.get_body()),
             text: String::from("text"),
         }
     }
@@ -42,5 +42,25 @@ fn get_title(body: &str) -> String {
             t
         }
         None => String::from("no title"),
+    }
+}
+
+fn get_location(body: &str) -> String {
+    let body = scraper::Html::parse_fragment(body);
+    let div = scraper::Selector::parse("div").unwrap();
+
+    let location = body
+        .select(&div)
+        .filter(|h| h.value().attr("class").is_some())
+        .filter(|h| h.value().attr("class").unwrap() == "polizeimeldung")
+        .map(|elem| elem.inner_html())
+        .nth(1);
+
+    match location {
+        Some(l) => {
+            println!("location: {}", l);
+            l
+        }
+        None => String::from("no location"),
     }
 }
