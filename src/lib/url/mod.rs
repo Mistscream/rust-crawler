@@ -46,11 +46,13 @@ impl Eq for Url {}
 
 pub fn from_html(body: &str) -> Vec<Url> {
     let base_url = "https://www.berlin.de";
-    let body = select::document::Document::from(body);
+    let body = scraper::Html::parse_fragment(body);
+    let anker_tags = scraper::Selector::parse("a").unwrap();
 
-    let urls: Vec<Url> = body
-        .find(select::predicate::Name("a"))
-        .filter_map(|a| a.attr("href"))
+    body.select(&anker_tags)
+        .map(|a| a.value().attr("href"))
+        .filter(|option| option.is_some())
+        .map(|href| href.unwrap())
         .map(|s| String::from(s))
         .map(|s| {
             if s.starts_with("/") {
@@ -60,7 +62,5 @@ pub fn from_html(body: &str) -> Vec<Url> {
             }
         }).filter(|s| s.starts_with("https://www.berlin.de/polizei/polizeimeldungen"))
         .map(|s| Url::new(&s))
-        .collect();
-
-    urls
+        .collect::<Vec<Url>>()
 }

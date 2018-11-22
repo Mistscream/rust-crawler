@@ -1,8 +1,8 @@
 extern crate chrono;
 extern crate regex;
 extern crate reqwest;
-extern crate select;
 extern crate rayon;
+extern crate scraper;
 
 mod lib;
 
