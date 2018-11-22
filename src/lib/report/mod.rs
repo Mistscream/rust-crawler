@@ -18,9 +18,29 @@ impl Report {
             requested_at: *response.get_time(),
             date: *response.get_time(),
             id: 0,
-            title: String::from("title"),
+            title: get_title(response.get_body()),
             location: String::from("location"),
             text: String::from("text"),
         }
+    }
+}
+
+fn get_title(body: &str) -> String {
+    let body = scraper::Html::parse_fragment(body);
+    let h1 = scraper::Selector::parse("h1").unwrap();
+
+    let title = body
+        .select(&h1)
+        .filter(|h| h.value().attr("class").is_some())
+        .filter(|h| h.value().attr("class").unwrap() == "title")
+        .map(|elem| elem.inner_html())
+        .nth(0);
+
+    match title {
+        Some(t) => {
+            println!("title: {}", t);
+            t
+        }
+        None => String::from("no title"),
     }
 }
