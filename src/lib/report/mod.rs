@@ -1,5 +1,5 @@
-use chrono::{prelude::*, DateTime, Utc};
-use lib::http::Response;
+use chrono::prelude::*;
+use lib::*;
 
 pub struct Report {
     url: String,
@@ -11,123 +11,162 @@ pub struct Report {
 }
 
 impl Report {
-    pub fn new(response: &Response) -> Report {
-        let body = scraper::Html::parse_fragment(response.get_body());
+    pub fn new(body: &str) -> Report {
+        let body = scraper::Html::parse_fragment(body);
         Report {
-            url: String::from(response.get_url()),
-            requested_at: response.get_time().to_rfc3339(),
-            date: Report::parse_date(&body),
-            title: Report::parse_title(&body),
-            location: Report::parse_location(&body),
+            url: "bla".to_string(),
+            requested_at: "bla".to_string(),
+            date: "bla".to_string(),
+            title: "bla".to_string(),
+            location: "bla".to_string(),
             text: String::from("text"),
         }
     }
-
-    fn parse_date(body: &scraper::Html) -> String {
-        let div = scraper::Selector::parse("div").unwrap();
-        let date = body
-            .select(&div)
-            .filter(|h| h.value().attr("class").is_some())
-            .filter(|h| h.value().attr("class").unwrap() == "polizeimeldung")
-            .map(|elem| elem.inner_html())
-            .nth(0);
-
-        let date = match date {
-            Some(d) => {
-                let day = &d[19..21].parse::<u32>();
-                let day = match day {
-                    Ok(d) => *d,
-                    Err(_) => 0,
-                };
-                let month = &d[22..24].parse::<u32>();
-                let month = match month {
-                    Ok(m) => *m,
-                    Err(_) => 0,
-                };
-                let year = &d[25..29].parse::<i32>();
-                let year = match year {
-                    Ok(y) => *y,
-                    Err(_) => 0,
-                };
-                Utc.ymd(year, month, day).and_hms(0, 0, 0)
-            }
-            None => Utc.ymd(0, 0, 0).and_hms(0, 0, 0),
-        };
-
-        date.to_rfc3339()
-    }
-
-    fn parse_title(body: &scraper::Html) -> String {
-        let h1 = scraper::Selector::parse("h1").unwrap();
-        let title = body
-            .select(&h1)
-            .filter(|h| h.value().attr("class").is_some())
-            .filter(|h| h.value().attr("class").unwrap() == "title")
-            .map(|elem| elem.inner_html())
-            .nth(0);
-
-        let title = match title {
-            Some(t) => t,
-            None => String::from("no title"),
-        };
-
-        title
-    }
-
-    fn parse_location(body: &scraper::Html) -> String {
-        let div = scraper::Selector::parse("div").unwrap();
-        let location = body
-            .select(&div)
-            .filter(|h| h.value().attr("class").is_some())
-            .filter(|h| h.value().attr("class").unwrap() == "polizeimeldung")
-            .map(|elem| elem.inner_html())
-            .nth(1);
-
-        let location = match location {
-            Some(l) => l,
-            None => String::from("no location"),
-        };
-
-        location
-    }
 }
 
-fn get_title(body: &str) -> String {
-    let body = scraper::Html::parse_fragment(body);
-    let h1 = scraper::Selector::parse("h1").unwrap();
+#[test]
+fn test1() {
+    let body =
+        crate::lib::request::get("https://www.berlin.de/polizei/polizeimeldungen/archiv/2014");
+        // crate::lib::request::get_request("https://www.berlin.de/polizei/polizeimeldungen/archiv/2018");
+    crate::lib::report::from_html(&body.unwrap());
+}
+pub fn from_html(body: &str) -> Vec<Report> {
+    // vector which will store all reports and be returned from function
+    let mut reports: Vec<Report> = Vec::new();
 
-    let title = body
-        .select(&h1)
-        .filter(|h| h.value().attr("class").is_some())
-        .filter(|h| h.value().attr("class").unwrap() == "title")
-        .map(|elem| elem.inner_html())
+    // parse body and declare selectors
+    let body = scraper::Html::parse_fragment(body);
+    let sel_ul = scraper::Selector::parse("ul").unwrap();
+    let sel_li = scraper::Selector::parse("li").unwrap();
+    let sel_div = scraper::Selector::parse("div").unwrap();
+
+    // find ul-element which has reports as li-elements
+    let ul = body
+        .select(&sel_ul)
+        .filter(|ul| ul.value().attr("class").is_some())
+        .filter(|ul| ul.value().attr("class").unwrap() == "list-autoteaser")
+        .map(|ul| ul.inner_html())
+        .map(|ul| scraper::Html::parse_fragment(&ul))
         .nth(0);
 
-    match title {
-        Some(t) => {
-            println!("title: {}", t);
-            t
-        }
-        None => String::from("no title"),
+    // return when there is no ul-element which has reports
+    if !ul.is_some() {
+        return reports;
     }
+
+    // store each li-element as independent html fragment
+    let list_items: Vec<scraper::Html> = ul
+        .unwrap()
+        .select(&sel_li)
+        .map(|li| li.inner_html())
+        .map(|li| scraper::Html::parse_fragment(&li))
+        .collect();
+
+    // create report from each li-element
+    for li in list_items {
+        let date = get_date(&li);
+        println!("{}", date);
+        let title = get_title(&li);
+        println!("{}", title);
+        let location = get_location(&li);
+        let mut url = get_url(&li);
+        url = format!("{}{}", "https://www.berlin.de", url);
+        println!("{}", url);
+        let text = get_text(&url);
+        println!("{}\n\n", text);
+    }
+
+    reports
 }
 
-fn get_location(body: &str) -> String {
-    let body = scraper::Html::parse_fragment(body);
-    let div = scraper::Selector::parse("div").unwrap();
+fn get_date(html: &scraper::Html) -> String {
+    let sel_div = scraper::Selector::parse("div").unwrap();
+    let date: String = html
+        .select(&sel_div)
+        .filter(|div| div.value().attr("class").is_some())
+        .filter(|div| div.value().attr("class").unwrap() == "span2 cell date")
+        .map(|div| div.inner_html())
+        .collect();
 
-    let location = body
-        .select(&div)
-        .filter(|h| h.value().attr("class").is_some())
-        .filter(|h| h.value().attr("class").unwrap() == "polizeimeldung")
-        .map(|elem| elem.inner_html())
-        .nth(1);
+    let day = match &date[0..2].parse::<u32>() {
+        Ok(d) => *d,
+        Err(_) => 1,
+    };
+    let month = match &date[3..5].parse::<u32>() {
+        Ok(m) => *m,
+        Err(_) => 1,
+    };
+    let year = match &date[6..10].parse::<i32>() {
+        Ok(y) => *y,
+        Err(_) => 1970,
+    };
 
-    match location {
-        Some(l) => {
-            println!("location: {}", l);
-            l
-        }
-        None => String::from("no location"),
+    let hour = match &date[11..13].parse::<u32>() {
+        Ok(h) => *h,
+        Err(_) => 12,
+    };
+
+    let minute = match &date[14..16].parse::<u32>() {
+        Ok(m) => *m,
+        Err(_) => 0,
+    };
+
+    FixedOffset::east(1 * 3600)
+        .ymd(year, month, day)
+        .and_hms(hour, minute, 0)
+        .to_rfc3339()
+}
+
+fn get_title(html: &scraper::Html) -> String {
+    let sel_a = scraper::Selector::parse("a").unwrap();
+    html.select(&sel_a).map(|a| a.inner_html()).collect()
+}
+
+fn get_location(html: &scraper::Html) -> String {
+    String::from("bla")
+}
+
+fn get_url(html: &scraper::Html) -> String {
+    let sel_a = scraper::Selector::parse("a").unwrap();
+    html.select(&sel_a)
+        .filter(|a| a.value().attr("href").is_some())
+        .map(|a| a.value().attr("href").unwrap())
+        .collect()
+}
+
+fn get_text(url: &str) -> String {
+    let body = request::get(&url);
+    if !body.is_some() {
+        return String::from("empty");
     }
+
+    let body = scraper::Html::parse_fragment(&body.unwrap());
+    let sel_div = scraper::Selector::parse("div").unwrap();
+    let sel_p = scraper::Selector::parse("p").unwrap();
+
+    let story_div = body
+        .select(&sel_div)
+        .filter(|div| div.value().attr("class").is_some())
+        .filter(|div| div.value().attr("class").unwrap() == "span7 column-content")
+        // .filter(|d| d == &"span7 column-content")
+        .map(|div| div.inner_html())
+        .map(|div| scraper::Html::parse_fragment(&div))
+        .nth(0);
+
+    if !story_div.is_some() {
+        return String::from("empty");
+    }
+
+    let p = story_div
+        .unwrap()
+        .select(&sel_p)
+        .map(|p| p.inner_html())
+        .nth(0);
+    
+    if !p.is_some() {
+        return String::from("empty");
+    }
+
+    p.unwrap()
 }

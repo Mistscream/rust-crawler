@@ -19,7 +19,7 @@ impl Url {
         self.visited = status;
     }
 
-    pub fn get_string(&self) -> &str {
+    pub fn as_str(&self) -> &str {
         &self.url
     }
 }
@@ -50,9 +50,7 @@ pub fn from_html(body: &str) -> Vec<Url> {
     let anker_tags = scraper::Selector::parse("a").unwrap();
 
     body.select(&anker_tags)
-        .map(|a| a.value().attr("href"))
-        .filter(|option| option.is_some())
-        .map(|href| href.unwrap())
+        .filter_map(|a| a.value().attr("href"))
         .map(|s| String::from(s))
         .map(|s| {
             if s.starts_with("/") {
@@ -60,7 +58,7 @@ pub fn from_html(body: &str) -> Vec<Url> {
             } else {
                 s
             }
-        }).filter(|s| s.starts_with("https://www.berlin.de/polizei/polizeimeldungen"))
+        }).filter(|s| s.starts_with("https://www.berlin.de/polizei/polizeimeldungen/archiv/20"))
         .map(|s| Url::new(&s))
         .collect::<Vec<Url>>()
 }
