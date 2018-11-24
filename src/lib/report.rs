@@ -44,6 +44,8 @@ pub fn from_html(body: &str) -> Vec<Report> {
     // find ul-element which has reports as li-elements
     let ul = body
         .select(&sel_ul)
+        // .filter_map(|ul| ul.value().attr("class"))
+        // .filter(|ul| ul == "list")
         .filter(|ul| ul.value().attr("class").is_some())
         .filter(|ul| ul.value().attr("class").unwrap() == "list-autoteaser")
         .map(|ul| ul.inner_html())

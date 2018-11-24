@@ -16,7 +16,7 @@ pub fn run(start_urls: Vec<String>) {
     loop {
         // make requests to all urls in queue
         let bodies: Vec<String> = url_queue
-            .par_iter()
+            .iter()
             .filter(|u| !u.is_visited())
             .filter_map(|u| request::get(u.as_str()))
             .collect();
