@@ -41,7 +41,7 @@ pub fn run(urls: Vec<String>) {
         reports.append(
             &mut bodies
                 .par_iter()
-                .flat_map(|b| report::from_html(b))
+                .flat_map(|b| report::Report::from_html(b))
                 .collect(),
         );
 
