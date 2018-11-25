@@ -35,7 +35,6 @@ pub fn run(urls: Vec<String>) {
             .iter()
             .for_each(|u| {
                 url_queue.insert(String::from(u.as_str()), false);
-                ()
             });
 
         // extract new reports from bodies and append to reports
