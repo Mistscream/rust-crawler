@@ -124,7 +124,6 @@ impl Report {
         let mut text: String = String::new();
         for elem in document.find(Class("span7").descendant(Class("textile"))) {
             for p in elem.find(Name("p")) {
-                println!("{}", p.text());
                 text.push_str(&p.text());
             }
         }
