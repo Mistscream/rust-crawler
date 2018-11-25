@@ -18,13 +18,18 @@ pub fn run(urls: Vec<String>) {
     loop {
         // make requests to all urls in queue
         // save response bodies in Vec
-        let bodies = url_queue
-            .par_iter()
-            .filter_map(|(k, _)| request::get(k.as_str()))
-            .collect::<Vec<String>>();
-
-        // mark all urls in queue as visited
-        url_queue.iter_mut().for_each(|(_, v)| *v = false);
+        let mut bodies: Vec<String> = Vec::new();
+        for (url, state) in url_queue.iter_mut() {
+            if *state == false {
+                match request::get(&url) {
+                    Some(res) => {
+                        bodies.push(res);
+                        *state = true;
+                    }
+                    None => (),
+                }
+            }
+        }
 
         // extract urls from bodies and append to url queue
         bodies
