@@ -34,7 +34,6 @@ impl Report {
             let date = Report::parse_date(elem);
             let text = Report::parse_text(&url);
 
-            println!("{}\n{}\n{}\n{}\n{}", title, url, location, date, text);
             reports.push(Report::new(title, url, location, date, text));
         }
 
