@@ -20,8 +20,7 @@ pub fn run(urls: Vec<String>) {
         // save response bodies in Vec
         let bodies = url_queue
             .par_iter()
-            .map(|(k, _)| k)
-            .filter_map(|u| request::get(u.as_str()))
+            .filter_map(|(k, _)| request::get(k.as_str()))
             .collect::<Vec<String>>();
 
         // mark all urls in queue as visited
