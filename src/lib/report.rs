@@ -35,6 +35,7 @@ impl Report {
             let text = Report::parse_text(&url);
 
             println!("{}\n{}\n{}\n{}\n{}", title, url, location, date, text);
+            reports.push(Report::new(title, url, location, date, text));
         }
 
         reports
@@ -65,7 +66,7 @@ impl Report {
 
     fn parse_location(elem: select::node::Node) -> String {
         match elem.find(Class("category")).next() {
-            Some(l) => String::from(l.text()),
+            Some(l) => String::from(&l.text()[13..]),
             None => String::from("no location"),
         }
     }
@@ -115,7 +116,7 @@ impl Report {
     fn parse_text(url: &str) -> String {
         let html = request::get(&url);
         if !html.is_some() {
-            return String::from("no text");
+            return String::from("");
         }
 
         let html = html.unwrap();
@@ -128,10 +129,6 @@ impl Report {
             }
         }
 
-        if text.len() == 0 {
-            String::from("no text")
-        } else {
-            text
-        }
+        text
     }
 }
