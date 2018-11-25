@@ -7,23 +7,25 @@ use rayon::prelude::*;
 use std::collections::HashMap;
 
 pub fn run(urls: Vec<String>) {
+    let start_time = Utc::now();
     let mut url_queue = HashMap::new();
+    let mut reports = Vec::new();
+
     for url in urls {
         url_queue.insert(String::from(url), false);
     }
 
-    let mut reports = Vec::new();
-    let start_time = Utc::now();
-
     loop {
         // make requests to all urls in queue
-        let bodies: Vec<String> = url_queue
-            .keys()
+        // save response bodies in Vec
+        let bodies = url_queue
+            .par_iter()
+            .map(|(k, _)| k)
             .filter_map(|u| request::get(u.as_str()))
-            .collect();
+            .collect::<Vec<String>>();
 
         // mark all urls in queue as visited
-        url_queue.iter_mut().for_each(|e| *e.1 = false);
+        url_queue.iter_mut().for_each(|(_, v)| *v = false);
 
         // extract urls from bodies and append to url queue
         bodies
@@ -32,8 +34,10 @@ pub fn run(urls: Vec<String>) {
             .filter(|u| !url_queue.contains_key(u))
             .collect::<Vec<String>>()
             .iter()
-            .map(|u| url_queue.insert(String::from(u.as_str()), false))
-            .for_each(|_| ());
+            .for_each(|u| {
+                url_queue.insert(String::from(u.as_str()), false);
+                ()
+            });
 
         // extract new reports from bodies and append to reports
         reports.append(
@@ -44,10 +48,16 @@ pub fn run(urls: Vec<String>) {
         );
 
         // stop crawling when there are no unvisited urls
-        if url_queue.len() > 1 {
-            let end_time = chrono::Utc::now();
-            let duration = start_time.signed_duration_since(end_time);
-            std::process::exit(0);
+        if url_queue.iter().filter(|(_, v)| !*v).count() > 1 {
+            break;
         }
     }
+
+    let end_time = Utc::now();
+    let duration = end_time.signed_duration_since(start_time);
+    println!("execution time: {}", duration);
+    println!("reports found: {}", reports.len());
+    println!("urls crawled (excluding report urls): {}", url_queue.len());
+
+    std::process::exit(0);
 }
