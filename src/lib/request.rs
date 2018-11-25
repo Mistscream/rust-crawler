@@ -6,7 +6,6 @@ pub fn get(url: &str) -> Option<String> {
 
     let mut body = body.unwrap();
     if !body.status().is_success() {
-        println!("request - no success: {}", body.status());
         return None;
     }
 
