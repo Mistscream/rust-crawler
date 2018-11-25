@@ -1,17 +1,26 @@
-pub fn from_html(body: &str) -> Vec<String> {
-    let base_url = "https://www.berlin.de";
-    let body = scraper::Html::parse_fragment(body);
-    let anker_tags = scraper::Selector::parse("a").unwrap();
+use select::document::Document;
+use select::predicate::*;
 
-    body.select(&anker_tags)
-        .filter_map(|a| a.value().attr("href"))
-        .map(|s| String::from(s))
-        .map(|s| {
-            if s.starts_with("/") {
-                format!("{}{}", base_url, s)
-            } else {
-                s
+pub fn from_html(html: &str) -> Vec<String> {
+    let mut urls: Vec<String> = Vec::new();
+    let document = Document::from(html);
+
+    for elem in document.find(Name("a")) {
+        match elem.attr("href") {
+            Some(url) => {
+                let mut url = String::from(url);
+                if url.starts_with("/") {
+                    url.insert_str(0, "http://www.berlin.de");
+                }
+                if url.starts_with("https://www.berlin.de/polizei/polizeimeldungen/archiv/20")
+                    && url.contains("page_at")
+                {
+                    urls.push(url);
+                }
             }
-        }).filter(|s| s.starts_with("https://www.berlin.de/polizei/polizeimeldungen/archiv/20"))
-        .collect::<Vec<String>>()
+            None => (),
+        }
+    }
+
+    urls
 }
