@@ -28,7 +28,7 @@ impl Report {
 fn test1() {
     let body =
         crate::lib::request::get("https://www.berlin.de/polizei/polizeimeldungen/archiv/2014");
-        // crate::lib::request::get_request("https://www.berlin.de/polizei/polizeimeldungen/archiv/2018");
+    // crate::lib::request::get_request("https://www.berlin.de/polizei/polizeimeldungen/archiv/2018");
     crate::lib::report::from_html(&body.unwrap());
 }
 pub fn from_html(body: &str) -> Vec<Report> {
@@ -44,8 +44,6 @@ pub fn from_html(body: &str) -> Vec<Report> {
     // find ul-element which has reports as li-elements
     let ul = body
         .select(&sel_ul)
-        // .filter_map(|ul| ul.value().attr("class"))
-        // .filter(|ul| ul == "list")
         .filter(|ul| ul.value().attr("class").is_some())
         .filter(|ul| ul.value().attr("class").unwrap() == "list-autoteaser")
         .map(|ul| ul.inner_html())
@@ -151,7 +149,6 @@ fn get_text(url: &str) -> String {
         .select(&sel_div)
         .filter(|div| div.value().attr("class").is_some())
         .filter(|div| div.value().attr("class").unwrap() == "span7 column-content")
-        // .filter(|d| d == &"span7 column-content")
         .map(|div| div.inner_html())
         .map(|div| scraper::Html::parse_fragment(&div))
         .nth(0);
@@ -160,15 +157,17 @@ fn get_text(url: &str) -> String {
         return String::from("empty");
     }
 
-    let p = story_div
+    let story_div = story_div
         .unwrap()
-        .select(&sel_p)
-        .map(|p| p.inner_html())
+        .select(&sel_div)
+        .filter(|div| div.value().attr("class").is_some())
+        .filter(|div| div.value().attr("class").unwrap() == "textile")
+        .map(|div| div.inner_html())
         .nth(0);
-    
-    if !p.is_some() {
+
+    if !story_div.is_some() {
         return String::from("empty");
     }
 
-    p.unwrap()
+    story_div.unwrap()
 }
