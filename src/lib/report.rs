@@ -34,7 +34,9 @@ impl Report {
             let date = Report::parse_date(elem);
             let text = Report::parse_text(&url);
 
-            reports.push(Report::new(title, url, location, date, text));
+            if text.len() > 0 {
+                reports.push(Report::new(title, url, location, date, text));
+            }
         }
 
         reports
