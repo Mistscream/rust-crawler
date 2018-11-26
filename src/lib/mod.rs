@@ -15,6 +15,8 @@ pub fn run(urls: Vec<String>) {
         url_queue.insert(String::from(url), false);
     }
 
+    println!("Starting...");
+    let mut i = 0;
     loop {
         // make requests to all urls in queue
         // save response bodies in Vec
@@ -51,14 +53,21 @@ pub fn run(urls: Vec<String>) {
         );
 
         // lets print some useful info
-        println!("visited urls in queue:\t{}", url_queue.iter().filter(|(_, v)| *v == &true).count());
-        println!("unvisited urls in queue:\t{}", url_queue.iter().filter(|(_, v)| *v == &false).count());
+        println!(
+            "visited urls in queue:\t{}",
+            url_queue.iter().filter(|(_, v)| *v == &true).count()
+        );
+        println!(
+            "unvisited urls in queue:\t{}",
+            url_queue.iter().filter(|(_, v)| *v == &false).count()
+        );
         println!("found reports:\t\t{}", reports.len());
 
         // stop crawling when there are no unvisited urls
         if url_queue.iter().filter(|(_, v)| !*v).count() > 0 {
             break;
         }
+        i += 1;
     }
 
     let end_time = Utc::now();
@@ -66,6 +75,7 @@ pub fn run(urls: Vec<String>) {
     println!("execution time: {}", duration);
     println!("reports found: {}", reports.len());
     println!("urls crawled (excluding report urls): {}", url_queue.len());
+    println!("execution loops: {}", i);
 
     std::process::exit(0);
 }
