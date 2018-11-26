@@ -1,6 +1,7 @@
 mod report;
 mod request;
 mod url;
+mod database;
 
 use chrono::Utc;
 use rayon::prelude::*;

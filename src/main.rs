@@ -2,6 +2,7 @@ extern crate chrono;
 extern crate reqwest;
 extern crate rayon;
 extern crate select;
+extern crate mongodb;
 
 mod lib;
 

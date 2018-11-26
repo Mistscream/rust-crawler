@@ -22,6 +22,10 @@ impl Report {
         }
     }
 
+    pub fn get_fields(&self) -> Vec<&str> {
+        vec![&self.url, &self.title, &self.date, &self.location, &self.text]
+    }
+
     pub fn from_html(html: &str) -> Vec<Report> {
         let mut reports: Vec<Report> = Vec::new();
 
