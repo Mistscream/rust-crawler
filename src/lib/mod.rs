@@ -1,26 +1,19 @@
+mod database;
 mod report;
 mod request;
 mod url;
-mod database;
 
 use chrono::Utc;
 use rayon::prelude::*;
 use std::collections::HashMap;
 
-pub fn run(urls: Vec<String>) {
-    let start_time = Utc::now();
-    let mut url_queue = HashMap::new();
+pub fn run(urls: HashMap<String, bool>) {
+    let mut url_queue = urls;
     let mut reports = Vec::new();
 
-    for url in urls {
-        url_queue.insert(String::from(url), false);
-    }
-
-    println!("Starting...");
-    let mut i = 0;
+    let start = Utc::now();
     loop {
         // make requests to all urls in queue
-        // save response bodies in Vec
         let mut bodies: Vec<String> = Vec::new();
         for (url, state) in url_queue.iter_mut() {
             if *state == false {
@@ -53,34 +46,16 @@ pub fn run(urls: Vec<String>) {
                 .collect(),
         );
 
-        // lets print some useful info
-        println!(
-            "visited urls in queue:\t{}",
-            url_queue.iter().filter(|(_, v)| *v == &true).count()
-        );
-        println!(
-            "unvisited urls in queue:\t{}",
-            url_queue.iter().filter(|(_, v)| *v == &false).count()
-        );
-        println!("found reports:\t\t{}", reports.len());
-
         // stop crawling when there are no unvisited urls
         if url_queue.iter().filter(|(_, v)| *v == &false).count() == 0 {
             break;
         }
-        i += 1;
     }
 
-    let end_time = Utc::now();
-    let time = end_time.signed_duration_since(start_time);
-    println!(
-        "execution time: {}:{}",
-        chrono::Duration::num_hours(&time),
-        chrono::Duration::num_minutes(&time)
-    );
+    let end = Utc::now();
+    let time = end.signed_duration_since(start);
+    let minutes = chrono::Duration::num_minutes(&time);
+    println!("execution time: {}:{}", minutes / 60, minutes % 60);
     println!("reports found: {}", reports.len());
     println!("urls crawled (excluding report urls): {}", url_queue.len());
-    println!("execution loops: {}", i);
-
-    std::process::exit(0);
 }
