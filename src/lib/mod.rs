@@ -32,7 +32,7 @@ pub fn run(urls: Vec<String>) {
                 }
             }
         }
-        
+
         // extract urls from bodies and append to url queue
         bodies
             .par_iter()
@@ -71,8 +71,12 @@ pub fn run(urls: Vec<String>) {
     }
 
     let end_time = Utc::now();
-    let duration = end_time.signed_duration_since(start_time);
-    println!("execution time: {}", duration);
+    let time = end_time.signed_duration_since(start_time);
+    println!(
+        "execution time: {}:{}",
+        chrono::Duration::num_hours(&time),
+        chrono::Duration::num_minutes(&time)
+    );
     println!("reports found: {}", reports.len());
     println!("urls crawled (excluding report urls): {}", url_queue.len());
     println!("execution loops: {}", i);

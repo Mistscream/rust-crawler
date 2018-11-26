@@ -6,6 +6,5 @@ authors = ["Marc Schmeling <marcsch@posteo.de>"]
 [dependencies]
 reqwest = "*"
 chrono = "*"
-regex = "*"
 rayon = "1.0.3"
 select = "*"
