@@ -10,7 +10,7 @@ pub fn from_html(html: &str) -> Vec<String> {
             Some(url) => {
                 let mut url = String::from(url);
                 if url.starts_with("/") {
-                    url.insert_str(0, "http://www.berlin.de");
+                    url.insert_str(0, "https://www.berlin.de");
                 }
                 if url.starts_with("https://www.berlin.de/polizei/polizeimeldungen/archiv/20")
                     && url.contains("page_at")

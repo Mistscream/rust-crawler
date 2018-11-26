@@ -32,7 +32,7 @@ pub fn run(urls: Vec<String>) {
                 }
             }
         }
-
+        
         // extract urls from bodies and append to url queue
         bodies
             .par_iter()
@@ -64,7 +64,7 @@ pub fn run(urls: Vec<String>) {
         println!("found reports:\t\t{}", reports.len());
 
         // stop crawling when there are no unvisited urls
-        if url_queue.iter().filter(|(_, v)| !*v).count() > 0 {
+        if url_queue.iter().filter(|(_, v)| *v == &false).count() == 0 {
             break;
         }
         i += 1;
