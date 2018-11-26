@@ -18,7 +18,7 @@ impl MongoDB {
         }
 
         let client = client.unwrap();
-        let coll = client.db("test").collection("movies");
+        let coll = client.db("crawler").collection("reports");
 
         Some(MongoDB {
             client: client,

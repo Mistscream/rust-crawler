@@ -6,13 +6,19 @@ mod url;
 use chrono::Utc;
 use rayon::prelude::*;
 use std::collections::HashMap;
+use lib::report::Report;
 
 pub fn run(urls: HashMap<String, bool>) {
     let mut url_queue = urls;
-    let mut reports = Vec::new();
+    let mut mongo = database::MongoDB::new("localhost", 27017).unwrap();
+    let mut rep_count = 0;
 
     let start = Utc::now();
     loop {
+        println!(
+            "unvisited urls in queue: {}",
+            url_queue.iter().filter(|(_, v)| *v == &false).count()
+        );
         // make requests to all urls in queue
         let mut bodies: Vec<String> = Vec::new();
         for (url, state) in url_queue.iter_mut() {
@@ -28,23 +34,26 @@ pub fn run(urls: HashMap<String, bool>) {
         }
 
         // extract urls from bodies and append to url queue
-        bodies
-            .par_iter()
-            .flat_map(|b| url::from_html(&b))
-            .filter(|u| !url_queue.contains_key(u))
-            .collect::<Vec<String>>()
-            .iter()
-            .for_each(|u| {
-                url_queue.insert(String::from(u.as_str()), false);
-            });
+        for body in bodies.iter() {
+            let urls = url::from_html(&body);
+            for url in urls {
+                if !url_queue.contains_key(&url) {
+                    url_queue.insert(String::from(url), false);
+                }
+            }
+        }
 
         // extract new reports from bodies and append to reports
-        reports.append(
-            &mut bodies
-                .par_iter()
-                .flat_map(|b| report::Report::from_html(b))
-                .collect(),
-        );
+        let reports: Vec<Report> = bodies
+            .iter()
+            .flat_map(|b| Report::from_html(b))
+            .collect();
+
+        // store reports in database
+        for report in reports {
+            mongo.add(report);
+            rep_count += 1;
+        }
 
         // stop crawling when there are no unvisited urls
         if url_queue.iter().filter(|(_, v)| *v == &false).count() == 0 {
@@ -56,6 +65,6 @@ pub fn run(urls: HashMap<String, bool>) {
     let time = end.signed_duration_since(start);
     let minutes = chrono::Duration::num_minutes(&time);
     println!("execution time: {}:{}", minutes / 60, minutes % 60);
-    println!("reports found: {}", reports.len());
+    println!("reports found: {}", rep_count);
     println!("urls crawled (excluding report urls): {}", url_queue.len());
 }

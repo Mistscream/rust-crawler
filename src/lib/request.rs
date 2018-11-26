@@ -1,4 +1,5 @@
 pub fn get(url: &str) -> Option<String> {
+    println!("Sending get request to {}", url);
     let body = reqwest::get(url);
     if body.is_err() {
         return None;
@@ -15,5 +16,7 @@ pub fn get(url: &str) -> Option<String> {
     }
 
     let html = body.unwrap();
+    println!("got successful response from {}", url);
+
     Some(html)
 }

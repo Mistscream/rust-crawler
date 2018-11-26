@@ -23,7 +23,13 @@ impl Report {
     }
 
     pub fn get_fields(&self) -> Vec<&str> {
-        vec![&self.url, &self.title, &self.date, &self.location, &self.text]
+        vec![
+            &self.url,
+            &self.title,
+            &self.date,
+            &self.location,
+            &self.text,
+        ]
     }
 
     pub fn from_html(html: &str) -> Vec<Report> {
@@ -32,6 +38,7 @@ impl Report {
         let document = Document::from(html);
         let li_elements: Vec<select::node::Node> = Vec::new();
         for elem in document.find(Class("list-autoteaser").descendant(Class("row-fluid"))) {
+            println!("found report: parsing data");
             let title = Report::parse_title(elem);
             let url = Report::parse_url(elem);
             let location = Report::parse_location(elem);
