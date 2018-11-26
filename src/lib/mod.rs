@@ -50,8 +50,13 @@ pub fn run(urls: Vec<String>) {
                 .collect(),
         );
 
+        // lets print some useful info
+        println!("visited urls in queue:\t{}", url_queue.iter().filter(|(_, v)| *v == &true).count());
+        println!("unvisited urls in queue:\t{}", url_queue.iter().filter(|(_, v)| *v == &false).count());
+        println!("found reports:\t\t{}", reports.len());
+
         // stop crawling when there are no unvisited urls
-        if url_queue.iter().filter(|(_, v)| !*v).count() > 1 {
+        if url_queue.iter().filter(|(_, v)| !*v).count() > 0 {
             break;
         }
     }
